@@ -22,7 +22,7 @@ jobs:
                   python -m pip install lxml codecov green flake8
                   python -m pip install .
             - name: "Run tests"
-              run: python setup.py test
+              run: green
             - name: "Submit test coverage"
               run: codecov
               env:
