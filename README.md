@@ -2,7 +2,7 @@
 
 [![][tests-img]][tests-url] [![][codecov-img]][codecov-url]
 
-[tests-img]: https://github.com/elife-asu/randomneet/workflows/tests/badge.svg
+[tests-img]: https://github.com/elife-asu/randomneet/workflows/randomneet/badge.svg
 [tests-url]: https://github.com/elife-asu/randomneet/actions
 
 [codecov-img]: https://codecov.io/gh/elife-asu/randomneet/branch/master/graph/badge.svg
