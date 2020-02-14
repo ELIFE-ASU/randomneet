@@ -14,3 +14,18 @@ class AbstractConstraint(object, metaclass=ABCMeta):
         :returns: ``True`` if the constraint is satisfied
         """
         pass
+
+
+class TopologicalConstraint(AbstractConstraint):
+    """
+    An abstract class representing a constraint on the topology of a network.
+    """
+    @abstractmethod
+    def satisfies(self, net):
+        """
+        Test a provided network against the constraint.
+
+        :param net: a network to test
+        :returns: ``True`` if the constraint is satisfied
+        """
+        pass

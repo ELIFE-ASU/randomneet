@@ -21,3 +21,11 @@ class TestConstraints(unittest.TestCase):
         self.assertTrue(issubclass(rc.AbstractConstraint, object))
         with self.assertRaises(TypeError):
             rc.AbstractConstraint()
+
+    def test_topological_constraint(self):
+        """
+        The TopologicalConstraint should be an abstract subclass of AbstractConstraint
+        """
+        self.assertTrue(issubclass(rc.TopologicalConstraint, rc.AbstractConstraint))
+        with self.assertRaises(TypeError):
+            rc.TopologicalConstraint()
