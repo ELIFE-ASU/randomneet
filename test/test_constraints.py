@@ -29,3 +29,11 @@ class TestConstraints(unittest.TestCase):
         self.assertTrue(issubclass(rc.TopologicalConstraint, rc.AbstractConstraint))
         with self.assertRaises(TypeError):
             rc.TopologicalConstraint()
+
+    def test_dynamical_constraint(self):
+        """
+        The DynamicalConstraint should be an abstract subclass of AbstractConstraint
+        """
+        self.assertTrue(issubclass(rc.DynamicalConstraint, rc.AbstractConstraint))
+        with self.assertRaises(TypeError):
+            rc.DynamicalConstraint()
