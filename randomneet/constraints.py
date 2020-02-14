@@ -1,9 +1,9 @@
 import networkx as nx
 import numpy as np
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 
 
-class AbstractConstraint(object, metaclass=ABCMeta):
+class AbstractConstraint(ABC):
     """
     An abstract class representing a constraint used for rejection testing.
     """
