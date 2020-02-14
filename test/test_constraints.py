@@ -1,5 +1,5 @@
 import randomneet
-import randomneet.constraints
+import randomneet.constraints as rc
 import unittest
 
 
@@ -13,3 +13,11 @@ class TestConstraints(unittest.TestCase):
         Ensure that constraints is exported from randomneet
         """
         self.assertTrue('constraints' in dir(randomneet))
+
+    def test_abstract_constraint(self):
+        """
+        The AbstractConstraint should be an abstract object
+        """
+        self.assertTrue(issubclass(rc.AbstractConstraint, object))
+        with self.assertRaises(TypeError):
+            rc.AbstractConstraint()
