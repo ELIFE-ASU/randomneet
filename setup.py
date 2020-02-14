@@ -15,7 +15,7 @@ setup(
     url='https://github.com/elife-asu/randomneet',
     license=LICENSE,
     install_requires=['neet', 'networkx', 'numpy'],
-    setup_requires=['green'],
+    setup_requires=['flake8', 'green'],
     packages=['randomneet'],
     test_suite='test',
     platforms=['Windows', 'OS X', 'Linux']
