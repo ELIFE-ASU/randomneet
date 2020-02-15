@@ -49,6 +49,12 @@ class TestConstraints(unittest.TestCase):
         with self.assertRaises(TypeError):
             rc.DynamicalConstraint()
 
+    def test_has_external_nodes_is_topological(self):
+        """
+        The HasExternalNodes constraint is a TopologicalConstraint
+        """
+        self.assertTrue(issubclass(rc.HasExternalNodes, rc.TopologicalConstraint))
+
     def test_has_external_nodes_invalid_init(self):
         """
         HasExternalNodes should raise a Value or TypeError for invalid
@@ -102,6 +108,12 @@ class TestConstraints(unittest.TestCase):
         self.assertFalse(constraint.satisfies(nx.DiGraph([(0, 1), (1, 2), (2, 1), (3, 2)])))
         self.assertTrue(constraint.satisfies(g))
         self.assertTrue(constraint.satisfies(nx.DiGraph([(1, 2), (3, 4), (5, 6), (7, 7)])))
+
+    def test_is_connected_is_topological(self):
+        """
+        The IsConnected constraint is a TopologicalConstraint
+        """
+        self.assertTrue(issubclass(rc.IsConnected, rc.TopologicalConstraint))
 
     def test_is_connected_raises(self):
         """
