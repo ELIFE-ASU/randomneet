@@ -3,6 +3,9 @@ import randomneet
 import randomneet.constraints as rc
 import unittest
 
+from neet.boolean import LogicNetwork
+from neet.boolean.examples import s_pombe, myeloid
+
 
 class TestConstraints(unittest.TestCase):
     """
@@ -146,3 +149,58 @@ class TestConstraints(unittest.TestCase):
         self.assertFalse(constraint.satisfies(self.empty_graph(2)))
         self.assertFalse(constraint.satisfies(nx.DiGraph([(0, 0), (1, 1)])))
         self.assertTrue(constraint.satisfies(nx.DiGraph([(0, 1)])))
+
+    def test_is_irreducibile_is_dynamical(self):
+        """
+        The IsIrreducible constraint is a DynamicalConstraint.
+        """
+        self.assertTrue(issubclass(rc.IsIrreducible, rc.DynamicalConstraint))
+
+    def test_is_irreducible_raises(self):
+        """
+        IsIrreducible.satisfies raises an error if the argument is not a Neet
+        network.
+        """
+        constraint = rc.IsIrreducible()
+        with self.assertRaises(TypeError):
+            constraint.satisfies(nx.DiGraph())
+        with self.assertRaises(TypeError):
+            constraint.satisfies(nx.Graph())
+
+    def test_is_irreducible_satisfies_non_logic(self):
+        """
+        IsIrreducible.satisfies is not implemented for non-LogicNetworks
+        """
+        constraint = rc.IsIrreducible()
+        with self.assertRaises(NotImplementedError):
+            constraint.satisfies(s_pombe)
+
+    def test_is_irreducible_satisfies(self):
+        """
+        IsIrreducible.satisfies correctly identifies networks that are
+        irreducible.
+        """
+        constraint = rc.IsIrreducible()
+        self.assertTrue(constraint.satisfies(myeloid))
+
+        reducible = LogicNetwork([((0,), {'0', '1'})])
+        self.assertFalse(constraint.satisfies(reducible))
+
+        reducible = LogicNetwork([((0, 1), {'01', '11'}),
+                                  ((0, 1), {'00', '01', '11'})])
+        self.assertFalse(constraint.satisfies(reducible))
+
+        reducible = LogicNetwork([((1,), {'0'}),
+                                  ((0, 1), {'01', '11'})])
+        self.assertFalse(constraint.satisfies(reducible))
+
+        irreducible = LogicNetwork([((0,), {'0'})])
+        self.assertTrue(constraint.satisfies(irreducible))
+
+        irreducible = LogicNetwork([((0, 1), {'01'}),
+                                    ((0, 1), {'00', '01', '11'})])
+        self.assertTrue(constraint.satisfies(irreducible))
+
+        irreducible = LogicNetwork([((1,), {'0'}),
+                                    ((0, 1), {'01', '11', '10'})])
+        self.assertTrue(constraint.satisfies(irreducible))

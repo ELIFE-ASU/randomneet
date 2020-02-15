@@ -1,3 +1,4 @@
+import neet
 import networkx as nx
 import numpy as np
 from abc import ABCMeta, abstractmethod
@@ -30,16 +31,18 @@ class TopologicalConstraint(AbstractConstraint):
     An abstract class representing a constraint on the topology of a network.
     """
     @abstractmethod
-    def satisfies(self, net):
+    def satisfies(self, graph):
         """
-        Test a provided network against the constraint.
+        Test a provided graph against the constraint.
 
-        :param net: a network to test
+        :param graph: a graph to test
+        :type graph: nx.DiGraph
         :returns: ``True`` if the constraint is satisfied
+        :raises TypeError: if the graph is not a networkx DiGraph
         """
-        if not isinstance(net, nx.DiGraph):
+        if not isinstance(graph, nx.DiGraph):
             raise TypeError('only directed graphs are testable with topological constraints')
-        return super(TopologicalConstraint, self).satisfies(net)
+        return super(TopologicalConstraint, self).satisfies(graph)
 
 
 class DynamicalConstraint(AbstractConstraint):
@@ -49,11 +52,15 @@ class DynamicalConstraint(AbstractConstraint):
     @abstractmethod
     def satisfies(self, net):
         """
-        Test a provided network against the constraint.
+        Test a provided net against the constraint.
 
         :param net: a network to test
+        :type net: neet.Network
         :returns: ``True`` if the constraint is satisfied
+        :raises TypeError: if the network is not a neet.Network
         """
+        if not isinstance(net, neet.Network):
+            raise TypeError('only neet networks are testable with dynamical constraints')
         return super(DynamicalConstraint, self).satisfies(net)
 
 
@@ -120,3 +127,28 @@ class IsConnected(TopologicalConstraint):
                 return nx.is_weakly_connected(graph)
             except nx.exception.NetworkXException as err:
                 raise ConstraintError() from err
+
+
+class IsIrreducible(DynamicalConstraint):
+    """
+    Ensure that all dynamical nodes have irreducible functions.
+    """
+    def satisfies(self, network):
+        """
+        This constraint is only satisfied if every node's function logically
+        depends on each of it's incoming neighbors.
+
+        :param network: a network to test
+        :type network: neet.boolean.LogicNetwork
+        :returns: ``True`` if every node's function is irredicible
+        """
+        if super(IsIrreducible, self).satisfies(network):
+            if not isinstance(network, neet.boolean.LogicNetwork):
+                raise NotImplementedError('IsIrreducible is not implemented for networks of type {}'
+                                          .format(type(network)))
+
+            for idx in range(network.size):
+                for neighbor_in in network.neighbors_in(idx):
+                    if not network.is_dependent(idx, neighbor_in):
+                        return False
+            return True
