@@ -50,7 +50,7 @@ class DynamicalConstraint(AbstractConstraint):
         return super(DynamicalConstraint, self).satisfies(net)
 
 
-class FixExternalNodes(TopologicalConstraint):
+class HasExternalNodes(TopologicalConstraint):
     def __init__(self, target):
         """
         An topological constraint requiring a specific number of external
@@ -89,5 +89,5 @@ class FixExternalNodes(TopologicalConstraint):
         :type graph: nx.DiGraph
         :returns: ``True`` if the digraph as the desired number of external nodes
         """
-        if super(FixExternalNodes, self).satisfies(graph):
+        if super(HasExternalNodes, self).satisfies(graph):
             return self.__count_external(graph) == self.num_external

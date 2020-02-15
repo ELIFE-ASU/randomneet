@@ -41,55 +41,55 @@ class TestConstraints(unittest.TestCase):
         with self.assertRaises(TypeError):
             rc.DynamicalConstraint()
 
-    def test_fixed_external_nodes_invalid_init(self):
+    def test_has_external_nodes_invalid_init(self):
         """
-        FixExternalNodes should raise a Value or TypeError for invalid
+        HasExternalNodes should raise a Value or TypeError for invalid
         initialization parameters.
         """
         with self.assertRaises(ValueError):
-            rc.FixExternalNodes(-1)
+            rc.HasExternalNodes(-1)
         with self.assertRaises(TypeError):
-            rc.FixExternalNodes(nx.Graph())
+            rc.HasExternalNodes(nx.Graph())
 
-    def test_fixed_external_nodes_counts(self):
+    def test_has_external_nodes_counts(self):
         """
-        FixExternalNodes properly counts the number of external nodes in a
+        HasExternalNodes properly counts the number of external nodes in a
         directed graph.
         """
         g = nx.DiGraph([(0, 1), (1, 2), (2, 1), (3, 1), (4, 5), (6, 6)])
-        constraint = rc.FixExternalNodes(g)
+        constraint = rc.HasExternalNodes(g)
         self.assertEqual(constraint.num_external, 3)
 
-    def test_fixed_external_nodes_saves_target(self):
+    def test_has_external_nodes_saves_target(self):
         """
-        FixExternalNodes properly stores the desired number of external edges.
+        HasExternalNodes properly stores the desired number of external edges.
         """
-        self.assertEqual(rc.FixExternalNodes(7).num_external, 7)
+        self.assertEqual(rc.HasExternalNodes(7).num_external, 7)
 
-    def test_fixed_external_nodes_raises(self):
+    def test_has_external_nodes_raises(self):
         """
-        FixExternalNodes.satisfies raises an error if the provided argument is
+        HasExternalNodes.satisfies raises an error if the provided argument is
         not a directed graph.
         """
-        constraint = rc.FixExternalNodes(3)
+        constraint = rc.HasExternalNodes(3)
         with self.assertRaises(TypeError):
             constraint.satisfies(3)
         with self.assertRaises(TypeError):
             constraint.satisfies(nx.Graph())
 
-    def test_fixed_external_nodes_satisfies(self):
+    def test_has_external_nodes_satisfies(self):
         """
-        FixExternalNodes.satsified correctly identifies directed graphs with
+        HasExternalNodes.satsified correctly identifies directed graphs with
         the desired number of external nodes.
         """
         g = nx.DiGraph([(0, 1), (1, 2), (2, 1), (3, 1), (4, 5), (6, 6)])
 
-        constraint = rc.FixExternalNodes(3)
+        constraint = rc.HasExternalNodes(3)
         self.assertFalse(constraint.satisfies(nx.DiGraph()))
         self.assertFalse(constraint.satisfies(nx.DiGraph([(0, 1), (1, 2), (2, 1), (3, 2)])))
         self.assertTrue(constraint.satisfies(g))
 
-        constraint = rc.FixExternalNodes(g)
+        constraint = rc.HasExternalNodes(g)
         self.assertFalse(constraint.satisfies(nx.DiGraph()))
         self.assertFalse(constraint.satisfies(nx.DiGraph([(0, 1), (1, 2), (2, 1), (3, 2)])))
         self.assertTrue(constraint.satisfies(g))
