@@ -9,6 +9,14 @@ class TestConstraints(unittest.TestCase):
     Unit tests for the various network constraints.
     """
 
+    def empty_graph(self, n=0):
+        """
+        Create a directed graph with no edges and ``n`` nodes.
+        """
+        g = nx.DiGraph()
+        g.add_nodes_from(range(n))
+        return g
+
     def test_constraints_module(self):
         """
         Ensure that constraints is exported from randomneet
@@ -79,7 +87,7 @@ class TestConstraints(unittest.TestCase):
 
     def test_has_external_nodes_satisfies(self):
         """
-        HasExternalNodes.satsified correctly identifies directed graphs with
+        HasExternalNodes.satsifies correctly identifies directed graphs with
         the desired number of external nodes.
         """
         g = nx.DiGraph([(0, 1), (1, 2), (2, 1), (3, 1), (4, 5), (6, 6)])
@@ -94,3 +102,35 @@ class TestConstraints(unittest.TestCase):
         self.assertFalse(constraint.satisfies(nx.DiGraph([(0, 1), (1, 2), (2, 1), (3, 2)])))
         self.assertTrue(constraint.satisfies(g))
         self.assertTrue(constraint.satisfies(nx.DiGraph([(1, 2), (3, 4), (5, 6), (7, 7)])))
+
+    def test_is_connected_raises(self):
+        """
+        IsConnected.satisfies raises an error if the provided argument is not a
+        directed graph.
+        """
+        constraint = rc.HasExternalNodes(3)
+        with self.assertRaises(TypeError):
+            constraint.satisfies(3)
+        with self.assertRaises(TypeError):
+            constraint.satisfies(nx.Graph())
+
+    def test_is_connected_null_graph(self):
+        """
+        IsConnected.satisfies raises an error if the provided argument is the
+        null graph.
+        """
+        constraint = rc.IsConnected()
+        with self.assertRaises(rc.ConstraintError):
+            constraint.satisfies(nx.DiGraph())
+
+    def test_is_connected_satisfies(self):
+        """
+        IsConnected.satisfies correctly identifies directed graphs that are
+        weakly connected.
+        """
+        constraint = rc.IsConnected()
+        self.assertTrue(constraint.satisfies(self.empty_graph(1)))
+        self.assertTrue(constraint.satisfies(nx.DiGraph([(0, 0)])))
+        self.assertFalse(constraint.satisfies(self.empty_graph(2)))
+        self.assertFalse(constraint.satisfies(nx.DiGraph([(0, 0), (1, 1)])))
+        self.assertTrue(constraint.satisfies(nx.DiGraph([(0, 1)])))
