@@ -21,7 +21,6 @@ jobs:
               run: |
                   python -m pip install lxml codecov green flake8
                   python -m pip install neet==1.0.0
-                  python -m pip install .
             - name: "Run tests"
               run: green
             - name: "Submit test coverage"
