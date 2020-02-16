@@ -7,7 +7,7 @@ with open("LICENSE") as f:
     LICENSE = f.read()
 
 setup(
-    name='neet',
+    name='randomneet',
     version='0.1.0',
     description='Randomizing Neet networks',
     maintainer='Douglas G. Moore',
