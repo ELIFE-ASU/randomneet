@@ -157,7 +157,7 @@ class TestConstraints(unittest.TestCase):
         """
         The IsIrreducible constraint is a DynamicalConstraint.
         """
-        print(IsIrreducible)
+        self.assertTrue(issubclass(IsIrreducible, DynamicalConstraint))
 
     def test_is_irreducible_raises(self):
         """
