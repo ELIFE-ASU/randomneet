@@ -14,7 +14,7 @@ setup(
     maintainer_email='doug@dglmoore.com',
     url='https://github.com/elife-asu/randomneet',
     license=LICENSE,
-    install_requires=['neet', 'networkx', 'numpy'],
+    install_requires=['neet>=1.0.0'],
     setup_requires=['flake8', 'green'],
     packages=['randomneet'],
     test_suite='test',
