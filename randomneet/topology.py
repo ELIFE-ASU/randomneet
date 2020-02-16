@@ -1,3 +1,6 @@
+import networkx as nx
+import numpy as np
+
 from .randomizer import AbstractRandomizer
 from .constraints import TopologicalConstraint, GenericTopological, ConstraintError
 
@@ -124,3 +127,67 @@ class FixedTopology(TopologyRandomizer):
         :returns: networkx.DiGraph
         """
         return self.graph
+
+
+class MeanDegree(TopologyRandomizer):
+    """
+    Generate a topology with the same mean degree as the initial network. This
+    amounts to randomly constructing a graph with the same number of edges as
+    the original graph.
+
+    :returns: networkx.DiGraph
+    """
+    def _randomize(self):
+        n = len(self.graph)
+        edgeindices = np.random.choice(n * n, self.graph.size(), replace=False)
+
+        G = nx.DiGraph()
+        G.add_nodes_from(range(n))
+        G.add_edges_from(map(lambda i: divmod(i, n), edgeindices))
+        return G
+
+
+class InDegree(TopologyRandomizer):
+    """
+    Generate a topology with the same in-degree distribution as the initial
+    network. This amounts iterating over all nodes and selecting :math:`k`
+    nodes from which to draw an edge, where :math:`k` is the in-degree of the
+    node in the original graph.
+
+    :returns: networkx.DiGraph
+    """
+    def _randomize(self):
+        n = len(self.graph)
+        edges = []
+        for j in range(n):
+            for i in np.random.choice(n, self.graph.in_degree(j), replace=False):
+                edges.append((i, j))
+
+        G = nx.DiGraph()
+        G.add_nodes_from(range(n))
+        G.add_edges_from(edges)
+
+        return G
+
+
+class OutDegree(TopologyRandomizer):
+    """
+    Generate a topology with the same out-degree distribution as the initial
+    network. This amounts iterating over all nodes and selecting :math:`k`
+    nodes to which to draw an edge, where :math:`k` is the in-degree of the
+    node in the original graph.
+
+    :returns: networkx.DiGraph
+    """
+    def _randomize(self):
+        n = len(self.graph)
+        edges = []
+        for i in range(n):
+            for j in np.random.choice(n, self.graph.out_degree(i), replace=False):
+                edges.append((i, j))
+
+        G = nx.DiGraph()
+        G.add_nodes_from(range(n))
+        G.add_edges_from(edges)
+
+        return G
