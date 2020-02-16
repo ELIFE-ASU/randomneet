@@ -153,7 +153,6 @@ class TestConstraints(unittest.TestCase):
         self.assertFalse(constraint.satisfies(nx.DiGraph([(0, 0), (1, 1)])))
         self.assertTrue(constraint.satisfies(nx.DiGraph([(0, 1)])))
 
-    @unittest.skip("Tracking down hanging test on Windows")
     def test_is_irreducibile_is_dynamical(self):
         """
         The IsIrreducible constraint is a DynamicalConstraint.
