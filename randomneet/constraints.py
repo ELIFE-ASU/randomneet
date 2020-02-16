@@ -146,11 +146,10 @@ class IsIrreducible(DynamicalConstraint):
                                      neet.boolean.LogicNetwork
         """
         if super(IsIrreducible, self).satisfies(network):
-            return isinstance(network, neet.boolean.LogicNetwork)
-        return False
-        #      if not isinstance(network, neet.boolean.LogicNetwork):
-        #          raise NotImplementedError('IsIrreducible is not implemented for networks of type {}'
-        #                                    .format(type(network)))
+            if not isinstance(network, neet.boolean.LogicNetwork):
+                raise NotImplementedError('IsIrreducible is not implemented for networks of type {}'
+                                          .format(type(network)))
+        return True
         #
         #      for idx in range(network.size):
         #          for neighbor_in in network.neighbors_in(idx):
