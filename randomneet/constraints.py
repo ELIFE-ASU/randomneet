@@ -145,7 +145,9 @@ class IsIrreducible(DynamicalConstraint):
         :raises NotImplementedError: if the network is not a
                                      neet.boolean.LogicNetwork
         """
-        return super(IsIrreducible, self).satisfies(network)
+        if super(IsIrreducible, self).satisfies(network):
+            return isinstance(network, neet.boolean.LogicNetwork)
+        return False
         #      if not isinstance(network, neet.boolean.LogicNetwork):
         #          raise NotImplementedError('IsIrreducible is not implemented for networks of type {}'
         #                                    .format(type(network)))
