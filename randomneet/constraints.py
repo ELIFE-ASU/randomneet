@@ -145,16 +145,17 @@ class IsIrreducible(DynamicalConstraint):
         :raises NotImplementedError: if the network is not a
                                      neet.boolean.LogicNetwork
         """
-        if super(IsIrreducible, self).satisfies(network):
-            if not isinstance(network, neet.boolean.LogicNetwork):
-                raise NotImplementedError('IsIrreducible is not implemented for networks of type {}'
-                                          .format(type(network)))
-
-            for idx in range(network.size):
-                for neighbor_in in network.neighbors_in(idx):
-                    if not network.is_dependent(idx, neighbor_in):
-                        return False
-            return True
+        #  if super(IsIrreducible, self).satisfies(network):
+        #      if not isinstance(network, neet.boolean.LogicNetwork):
+        #          raise NotImplementedError('IsIrreducible is not implemented for networks of type {}'
+        #                                    .format(type(network)))
+        #
+        #      for idx in range(network.size):
+        #          for neighbor_in in network.neighbors_in(idx):
+        #              if not network.is_dependent(idx, neighbor_in):
+        #                  return False
+        #      return True
+        return True
 
 
 class HasCanalizingNodes(DynamicalConstraint):
