@@ -2,10 +2,11 @@ import networkx as nx
 import randomneet
 import unittest
 
+from itertools import islice
 from neet.boolean.examples import s_pombe
-from randomneet.constraints import IsIrreducible, IsConnected, GenericTopological
+from randomneet.constraints import IsIrreducible, IsConnected, GenericTopological, ConstraintError
 from randomneet.randomizer import AbstractRandomizer
-from randomneet.topology import TopologyRandomizer
+from randomneet.topology import TopologyRandomizer, FixedTopology
 
 
 class MockTopologyRandomizer(TopologyRandomizer):
@@ -79,7 +80,7 @@ class TestTopologyRandomizers(unittest.TestCase):
         with self.assertRaises(TypeError):
             rand.constraints = [IsIrreducible()]
 
-    def test_randomizer_add_constraints(self):
+    def test_topology_randomizer_add_constraints(self):
         """
         Ensure that we can add constraints after initialization
         """
@@ -98,3 +99,91 @@ class TestTopologyRandomizers(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             rand.add_constraint(IsIrreducible())
+
+    def test_fixed_topology_constraints(self):
+        """
+        Ensure that the randomizer correctly instantiates the constraints
+        """
+        c1 = IsConnected()
+        rand = FixedTopology(s_pombe, constraints=[c1])
+        self.assertEqual(rand.network, s_pombe)
+        self.assertTrue(nx.is_isomorphic(rand.graph, s_pombe.network_graph()))
+        self.assertEqual(rand.timeout, 1000)
+        self.assertEqual(rand.constraints, [c1])
+
+        c2 = lambda _: True  # noqa
+        rand = FixedTopology(s_pombe, constraints=[c2])
+        self.assertEqual(rand.network, s_pombe)
+        self.assertTrue(nx.is_isomorphic(rand.graph, s_pombe.network_graph()))
+        self.assertEqual(rand.timeout, 1000)
+        self.assertEqual(len(rand.constraints), 1)
+        self.assertIsInstance(rand.constraints[0], GenericTopological)
+        self.assertEqual(rand.constraints[0].test, c2)
+
+        with self.assertRaises(ConstraintError):
+            FixedTopology(s_pombe, constraints=[lambda _: False])
+
+        with self.assertRaises(TypeError):
+            FixedTopology(s_pombe, constraints=[IsIrreducible()])
+
+    def test_fixed_topology_set_constraints(self):
+        """
+        Ensure that the randomizer correctly instantiates the constraints
+        """
+        c1 = IsConnected()
+        rand = FixedTopology(s_pombe)
+        rand.constraints = [c1]
+        self.assertEqual(rand.constraints, [c1])
+
+        c2 = lambda _: True  # noqa
+        rand.constraints = [c2]
+        self.assertEqual(len(rand.constraints), 1)
+        self.assertIsInstance(rand.constraints[0], GenericTopological)
+        self.assertEqual(rand.constraints[0].test, c2)
+
+        rand.constraints = {c1}
+        self.assertEqual(rand.constraints, [c1])
+
+        rand.constraints = (c1,)
+        self.assertEqual(rand.constraints, [c1])
+
+        with self.assertRaises(ConstraintError):
+            rand.constraints = [lambda _: False]
+
+        with self.assertRaises(TypeError):
+            rand.constraints = [IsIrreducible()]
+
+    def test_fixed_topology_add_constraints(self):
+        """
+        Ensure that we can add constraints after initialization
+        """
+        c1, c2 = IsConnected(), (lambda _: True)
+        rand = FixedTopology(s_pombe)
+
+        rand.add_constraint(c1)
+        self.assertEqual(len(rand.constraints), 1)
+        self.assertEqual(rand.constraints, [c1])
+
+        rand.add_constraint(c2)
+        self.assertEqual(len(rand.constraints), 2)
+        self.assertEqual(rand.constraints[0], c1)
+        self.assertIsInstance(rand.constraints[1], GenericTopological)
+        self.assertEqual(rand.constraints[1].test, c2)
+
+        with self.assertRaises(ConstraintError):
+            rand.add_constraint(lambda _: False)
+
+        with self.assertRaises(TypeError):
+            rand.add_constraint(IsIrreducible())
+
+    def test_fixed_topology(self):
+        """
+        Ensure that the topologies generated are isomorphic to the original topology
+        """
+        g = nx.DiGraph([(0, 1), (1, 1), (2, 1)])
+        rand = FixedTopology(g)
+        self.assertTrue(all(map(lambda h: nx.is_isomorphic(g, h), islice(rand, 10))))
+
+        g = s_pombe.network_graph()
+        rand = FixedTopology(g)
+        self.assertTrue(all(map(lambda h: nx.is_isomorphic(g, h), islice(rand, 10))))
