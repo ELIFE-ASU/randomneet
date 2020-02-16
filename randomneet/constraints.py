@@ -148,14 +148,12 @@ class IsIrreducible(DynamicalConstraint):
         if super(IsIrreducible, self).satisfies(network):
             if not isinstance(network, neet.boolean.LogicNetwork):
                 raise NotImplementedError()
-        return True
-        #
-        #      for idx in range(network.size):
-        #          for neighbor_in in network.neighbors_in(idx):
-        #              if not network.is_dependent(idx, neighbor_in):
-        #                  return False
-        #      return True
-        #  return True
+
+            for idx in range(network.size):
+                for neighbor_in in network.neighbors_in(idx):
+                    if not network.is_dependent(idx, neighbor_in):
+                        return False
+            return True
 
 
 class HasCanalizingNodes(DynamicalConstraint):
