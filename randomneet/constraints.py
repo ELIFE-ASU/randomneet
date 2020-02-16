@@ -197,3 +197,49 @@ class HasCanalizingNodes(DynamicalConstraint):
         """
         if super(HasCanalizingNodes, self).satisfies(network):
             return self.__count_canalizing_nodes(network) == self.num_canalizing
+
+
+class GenericTopological(TopologicalConstraint):
+    def __init__(self, test):
+        """
+        A generic constraint defined in terms of a callable.
+
+        :param test: a user-specified test
+        :type test: callable
+        """
+        if not callable(test):
+            raise TypeError('test must be callable')
+        self.test = test
+
+    def satisfies(self, net):
+        """
+        Test a provided network against a generic constraint.
+
+        :param net: a network to test
+        :returns: ``True`` if the constraint is satisified
+        """
+        if super(GenericTopological, self).satisfies(net):
+            return self.test(net)
+
+
+class GenericDynamical(DynamicalConstraint):
+    def __init__(self, test):
+        """
+        A generic constraint defined in terms of a callable.
+
+        :param test: a user-specified test
+        :type test: callable
+        """
+        if not callable(test):
+            raise TypeError('test must be callable')
+        self.test = test
+
+    def satisfies(self, net):
+        """
+        Test a provided network against a generic constraint.
+
+        :param net: a network to test
+        :returns: ``True`` if the constraint is satisified
+        """
+        if super(GenericDynamical, self).satisfies(net):
+            return self.test(net)

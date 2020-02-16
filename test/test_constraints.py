@@ -32,7 +32,7 @@ class TestConstraints(unittest.TestCase):
         """
         self.assertTrue(issubclass(rc.AbstractConstraint, object))
         with self.assertRaises(TypeError):
-            rc.AbstractConstraint()
+            rc.AbstractConstraint()  # type: ignore
 
     def test_topological_constraint(self):
         """
@@ -41,7 +41,7 @@ class TestConstraints(unittest.TestCase):
         """
         self.assertTrue(issubclass(rc.TopologicalConstraint, rc.AbstractConstraint))
         with self.assertRaises(TypeError):
-            rc.TopologicalConstraint()
+            rc.TopologicalConstraint()  # type: ignore
 
     def test_dynamical_constraint(self):
         """
@@ -50,7 +50,7 @@ class TestConstraints(unittest.TestCase):
         """
         self.assertTrue(issubclass(rc.DynamicalConstraint, rc.AbstractConstraint))
         with self.assertRaises(TypeError):
-            rc.DynamicalConstraint()
+            rc.DynamicalConstraint()  # type: ignore
 
     def test_has_external_nodes_is_topological(self):
         """
@@ -260,3 +260,89 @@ class TestConstraints(unittest.TestCase):
         constraint = rc.HasCanalizingNodes(myeloid)
         self.assertTrue(constraint.satisfies(myeloid))
         self.assertFalse(constraint.satisfies(s_pombe))
+
+    def test_generic_topological_is_topological(self):
+        """
+        Ensure that GenericTopological is a subclass of TopologicalConstraint.
+        """
+        self.assertTrue(issubclass(rc.GenericTopological, rc.TopologicalConstraint))
+
+    def test_generic_topological_raises(self):
+        """
+        GenericTopological raises a TypeError if it's instantiated with
+        anything that is not callable.
+        """
+        with self.assertRaises(TypeError):
+            rc.GenericTopological(5)
+        with self.assertRaises(TypeError):
+            rc.GenericTopological(rc.IsConnected())
+
+    def test_generic_topological_satisfies_raises(self):
+        """
+        GenericTopological.satisfies raises a TypeError when its argument is
+        not a directed graph.
+        """
+        allpass = rc.GenericTopological(lambda g: True)
+        with self.assertRaises(TypeError):
+            allpass.satisfies(nx.Graph())
+        with self.assertRaises(TypeError):
+            allpass.satisfies(s_pombe)
+
+    def test_generic_topological_satisfies(self):
+        """
+        GenericTopological.satisfies correctly checks graphs.
+        """
+        allpass = rc.GenericTopological(lambda g: True)
+        self.assertTrue(allpass.satisfies(self.empty_graph()))
+        self.assertTrue(allpass.satisfies(nx.DiGraph([(0, 1), (1, 2), (2, 0)])))
+
+        allfail = rc.GenericTopological(lambda g: False)
+        self.assertFalse(allfail.satisfies(self.empty_graph()))
+        self.assertFalse(allfail.satisfies(nx.DiGraph([(0, 1), (1, 2), (2, 0)])))
+
+        twonodes = rc.GenericTopological(lambda g: len(g) == 2)
+        self.assertFalse(twonodes.satisfies(self.empty_graph()))
+        self.assertTrue(twonodes.satisfies(self.empty_graph(2)))
+
+    def test_generic_dynamical_is_dynamical(self):
+        """
+        Ensure that GenericDynamical is a subclass of DynamicalConstraint.
+        """
+        self.assertTrue(issubclass(rc.GenericDynamical, rc.DynamicalConstraint))
+
+    def test_generic_dynamical_raises(self):
+        """
+        GenericDynamical raises a TypeError if it's instantiated with anything
+        that is not callable.
+        """
+        with self.assertRaises(TypeError):
+            rc.GenericDynamical(5)
+        with self.assertRaises(TypeError):
+            rc.GenericDynamical(rc.IsIrreducible())
+
+    def test_generic_dynamical_satisfies_raises(self):
+        """
+        GenericDynamical.satisfies raises a TypeError when its argument is not
+        a network.
+        """
+        allpass = rc.GenericDynamical(lambda n: True)
+        with self.assertRaises(TypeError):
+            allpass.satisfies(nx.Graph())
+        with self.assertRaises(TypeError):
+            allpass.satisfies(nx.DiGraph())
+
+    def test_generic_dynamical_satisfies(self):
+        """
+        GenericDynamical.satisfies correctly checks networks.
+        """
+        allpass = rc.GenericDynamical(lambda n: True)
+        self.assertTrue(allpass.satisfies(myeloid))
+        self.assertTrue(allpass.satisfies(s_pombe))
+
+        allfail = rc.GenericDynamical(lambda g: False)
+        self.assertFalse(allfail.satisfies(myeloid))
+        self.assertFalse(allfail.satisfies(s_pombe))
+
+        ninenodes = rc.GenericDynamical(lambda g: g.size == 9)
+        self.assertTrue(ninenodes.satisfies(s_pombe))
+        self.assertFalse(ninenodes.satisfies(myeloid))
