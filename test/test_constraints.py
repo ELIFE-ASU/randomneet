@@ -204,3 +204,59 @@ class TestConstraints(unittest.TestCase):
         irreducible = LogicNetwork([((1,), {'0'}),
                                     ((0, 1), {'01', '11', '10'})])
         self.assertTrue(constraint.satisfies(irreducible))
+
+    def test_has_canalizing_nodes_is_dynamical(self):
+        """
+        The HasCanalizingNodes constraint is a DynamicalConstraint
+        """
+        self.assertTrue(issubclass(rc.HasCanalizingNodes, rc.DynamicalConstraint))
+
+    def test_has_canalizing_nodes_invalid_init(self):
+        """
+        HasCanalizingNodes should raise a ValueError or TypeError for invalid
+        initialization parameters.
+        """
+        with self.assertRaises(ValueError):
+            rc.HasCanalizingNodes(-1)
+        with self.assertRaises(TypeError):
+            rc.HasCanalizingNodes(nx.Graph())
+
+    def test_has_canalizing_nodes_counts(self):
+        """
+        HasCanalizingNodes properly counts the number of canalizing nodes in a
+        network.
+        """
+        constraint = rc.HasCanalizingNodes(myeloid)
+        self.assertEqual(constraint.num_canalizing, 11)
+
+        constraint = rc.HasCanalizingNodes(s_pombe)
+        self.assertEqual(constraint.num_canalizing, 5)
+
+    def test_has_canalizing_nodes_saves_target(self):
+        """
+        HasCanalizingNodes properly stores the desired number of external
+        edges.
+        """
+        self.assertEqual(rc.HasCanalizingNodes(7).num_canalizing, 7)
+
+    def test_has_canalizing_nodes_raises(self):
+        """
+        HasCanalizingNodes.satisfies raises an error if the provided argument
+        is not a neet network
+        """
+        constraint = rc.HasCanalizingNodes(3)
+        with self.assertRaises(TypeError):
+            constraint.satisfies(3)
+        with self.assertRaises(TypeError):
+            constraint.satisfies(nx.Graph())
+        with self.assertRaises(TypeError):
+            constraint.satisfies(nx.DiGraph())
+
+    def test_has_canalizing_nodes_satisfies(self):
+        """
+        HasCanalizingNodes.satsifies correctly identifies networks the desired
+        number of canalizing nodes.
+        """
+        constraint = rc.HasCanalizingNodes(myeloid)
+        self.assertTrue(constraint.satisfies(myeloid))
+        self.assertFalse(constraint.satisfies(s_pombe))
