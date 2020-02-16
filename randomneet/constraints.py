@@ -147,8 +147,7 @@ class IsIrreducible(DynamicalConstraint):
         """
         if super(IsIrreducible, self).satisfies(network):
             if not isinstance(network, neet.boolean.LogicNetwork):
-                msg = 'IsIrreducible is not implemented for type ' + str(type(network))
-                raise NotImplementedError(msg)
+                raise NotImplementedError(type(network))
         return True
         #
         #      for idx in range(network.size):
