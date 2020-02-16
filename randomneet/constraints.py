@@ -42,7 +42,7 @@ class TopologicalConstraint(AbstractConstraint):
         """
         if not isinstance(graph, nx.DiGraph):
             raise TypeError('only directed graphs are testable with topological constraints')
-        return super(TopologicalConstraint, self).satisfies(graph)
+        return super().satisfies(graph)
 
 
 class DynamicalConstraint(AbstractConstraint):
@@ -61,7 +61,7 @@ class DynamicalConstraint(AbstractConstraint):
         """
         if not isinstance(net, neet.Network):
             raise TypeError('only neet networks are testable with dynamical constraints')
-        return super(DynamicalConstraint, self).satisfies(net)
+        return super().satisfies(net)
 
 
 class HasExternalNodes(TopologicalConstraint):
@@ -105,7 +105,7 @@ class HasExternalNodes(TopologicalConstraint):
         :returns: ``True`` if the digraph as the desired number of external
                   nodes
         """
-        if super(HasExternalNodes, self).satisfies(graph):
+        if super().satisfies(graph):
             return self.__count_external(graph) == self.num_external
 
 
@@ -123,7 +123,7 @@ class IsConnected(TopologicalConstraint):
         :returns: ``True`` if the digraph as the desired number of external
                   nodes
         """
-        if super(IsConnected, self).satisfies(graph):
+        if super().satisfies(graph):
             try:
                 return nx.is_weakly_connected(graph)
             except nx.exception.NetworkXException as err:
@@ -145,7 +145,7 @@ class IsIrreducible(DynamicalConstraint):
         :raises NotImplementedError: if the network is not a
                                      neet.boolean.LogicNetwork
         """
-        if super(IsIrreducible, self).satisfies(network):
+        if super().satisfies(network):
             if not isinstance(network, neet.boolean.LogicNetwork):
                 raise NotImplementedError()
 
@@ -194,7 +194,7 @@ class HasCanalizingNodes(DynamicalConstraint):
         This constraint is only satisfied if the provided network has
         ``self.num_canalizing``-many canalizing nodes.
         """
-        if super(HasCanalizingNodes, self).satisfies(network):
+        if super().satisfies(network):
             return self.__count_canalizing_nodes(network) == self.num_canalizing
 
 
@@ -217,7 +217,7 @@ class GenericTopological(TopologicalConstraint):
         :param net: a network to test
         :returns: ``True`` if the constraint is satisified
         """
-        if super(GenericTopological, self).satisfies(net):
+        if super().satisfies(net):
             return self.test(net)
 
 
@@ -240,5 +240,5 @@ class GenericDynamical(DynamicalConstraint):
         :param net: a network to test
         :returns: ``True`` if the constraint is satisified
         """
-        if super(GenericDynamical, self).satisfies(net):
+        if super().satisfies(net):
             return self.test(net)
