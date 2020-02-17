@@ -64,3 +64,21 @@ class NetworkRandomizer(AbstractRandomizer):
 
         self.trand.constraints = tconstraints
         AbstractRandomizer.constraints.__set__(self, dconstraints)  # type: ignore
+
+    def add_constraint(self, constraint):
+        """
+        Append a constraint to the randomizer's list of constraints.
+
+        :param constraint: the new constraint
+        :type constraint: AbstractConstraint
+        :raises TypeError: if the constraint is not an AbstractConstraint
+        """
+        if isinstance(constraint, DynamicalConstraint):
+            super().add_constraint(constraint)
+        elif callable(constraint):
+            super().add_constraint(GenericDynamical(constraint))
+        elif isinstance(constraint, TopologicalConstraint):
+            self.trand.add_constraint(constraint)
+        else:
+            msg = 'constraints must be callable, a DynamicalConstraint or TopologicalConstraint'
+            raise TypeError(msg)

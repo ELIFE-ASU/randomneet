@@ -140,3 +140,32 @@ class TestDynamicsRandomizer(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             rand.constraints = [5]
+
+    def test_network_randomizer_add_constraints(self):
+        """
+        Ensure that the randomizer correctly adds the constraints
+        """
+        c1, c2, c3 = IsIrreducible(), (lambda _: False), IsConnected()
+
+        rand = MockNetworkRandomizer(s_pombe)
+
+        rand.add_constraint(c1)
+        self.assertEqual(rand.constraints, [c1])
+        self.assertEqual(rand.trand.constraints, [])
+
+        rand.add_constraint(c2)
+        self.assertEqual(len(rand.constraints), 2)
+        self.assertEqual(rand.constraints[0], c1)
+        self.assertIsInstance(rand.constraints[1], GenericDynamical)
+        self.assertEqual(rand.constraints[1].test, c2)
+        self.assertEqual(rand.trand.constraints, [])
+
+        rand.add_constraint(c3)
+        self.assertEqual(len(rand.constraints), 2)
+        self.assertEqual(rand.constraints[0], c1)
+        self.assertIsInstance(rand.constraints[1], GenericDynamical)
+        self.assertEqual(rand.constraints[1].test, c2)
+        self.assertEqual(rand.trand.constraints, [c3])
+
+        with self.assertRaises(TypeError):
+            rand.add_constraint(5)
