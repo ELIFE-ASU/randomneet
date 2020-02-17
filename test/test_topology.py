@@ -59,7 +59,7 @@ class TestTopologyRandomizers(unittest.TestCase):
 
     def test_topology_randomizer_set_constraints(self):
         """
-        Ensure that the randomizer correctly instantiates the constraints
+        Ensure that the randomizer correctly sets the constraints
         """
         c1 = IsConnected()
         rand = MockTopologyRandomizer(s_pombe)
