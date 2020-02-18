@@ -100,7 +100,7 @@ class NetworkRandomizer(AbstractRandomizer):
 
     def _randomize(self, topology):
         table = []
-        for node in topology.nodes:
+        for node in sorted(list(topology.nodes)):
             predecessors = tuple(topology.predecessors(node))
             params = self._function_class_parameters(topology, node)
             table.append((predecessors, self._random_function(**params)))
