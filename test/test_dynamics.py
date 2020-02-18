@@ -1,7 +1,6 @@
 import randomneet
 import unittest
 
-from neet.boolean.examples import s_pombe
 from randomneet.dynamics import NetworkRandomizer
 from randomneet.randomizer import AbstractRandomizer
 
@@ -22,5 +21,3 @@ class TestNetworkRandomizer(unittest.TestCase):
         NetworkRandomizer should be an abstract object
         """
         self.assertTrue(issubclass(NetworkRandomizer, AbstractRandomizer))
-        with self.assertRaises(TypeError):
-            NetworkRandomizer(s_pombe)  # type: ignore
