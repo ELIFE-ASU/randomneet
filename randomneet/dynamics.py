@@ -115,4 +115,19 @@ class NetworkRandomizer(AbstractRandomizer):
 
     @abstractmethod
     def _function_class_parameters(self, topology, node):
-        return {'topology': topology, 'node': node}
+        return {'topology': topology, 'node': node, 'k': topology.in_degree(node)}
+
+
+class UniformBias(NetworkRandomizer):
+    def __init__(self, network, p=0.5, **kwargs):
+        """
+        Generate random Boolean networks with the same bias on each non-external
+        node.
+        """
+        super().__init__(network, **kwargs)
+        self.p = p
+
+    def _function_class_parameters(self, topology, node):
+        params = super()._function_class_parameters(topology, node)
+        params.update({'p': self.p})
+        return params

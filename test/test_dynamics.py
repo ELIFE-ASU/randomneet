@@ -1,13 +1,15 @@
+import math
 import networkx as nx
 import randomneet
 import unittest
 
-from neet.boolean.examples import s_pombe
-from randomneet.dynamics import NetworkRandomizer
+from neet.boolean.examples import s_pombe, myeloid
+from randomneet.dynamics import NetworkRandomizer, UniformBias
 from randomneet.constraints import GenericDynamical, GenericTopological, ConstraintError
 from randomneet.randomizer import AbstractRandomizer
 from randomneet.topology import TopologyRandomizer, FixedTopology, MeanDegree
 from randomneet.constraints import IsConnected, IsIrreducible
+from itertools import islice
 
 
 class MockTopologyRandomizer(TopologyRandomizer):
@@ -222,3 +224,54 @@ class TestNetworkRandomizer(unittest.TestCase):
 
         network = rand.random()
         self.assertEqual(len(network.network_graph()), 10)
+
+
+class TestUniformBias(unittest.TestCase):
+    """
+    Unit tests for the UniformBias randomizer
+    """
+
+    def bias(self, network):
+        """
+        Get the bias of each node in the network
+        """
+        return [float(len(row[1]) / 2**len(row[0])) for row in network.table]
+
+    def take(self, n, iter):
+        """
+        Take the first ``n`` elements from ``iter``.
+        """
+        return islice(iter, n)
+
+    def test_uniform_bias(self):
+        """
+        Ensure that UniformBias is a NetworkRandomizer
+        """
+        self.assertIsInstance(UniformBias(myeloid), NetworkRandomizer)
+
+    def test_default_bias(self):
+        """
+        Ensure the generated networks have a bias of 0.5 by default
+        """
+        rand = UniformBias(s_pombe)
+        expect = [0.0 if k == 0 else 0.5 for k in dict(s_pombe.network_graph().in_degree).values()]
+        got = list(map(self.bias, self.take(10, rand)))
+        self.assertEqual(got, [expect] * len(got))
+
+    def test_other_bias(self):
+        """
+        Ensure the generated networks have the specified
+        """
+        p = 0.3
+
+        rand = UniformBias(s_pombe, p)
+        indegree = dict(s_pombe.network_graph().in_degree).values()
+        high = [0.0 if k == 0 else math.ceil(p * 2**k) / 2**k for k in indegree]
+        low = [0.0 if k == 0 else math.floor(p * 2**k) / 2**k for k in indegree]
+        for net in self.take(10, rand):
+            got = self.bias(net)
+            for g, l, h in zip(got, low, high):
+                try:
+                    self.assertTrue(g == l or g == h)
+                except Exception as e:
+                    raise Exception(got, low, high) from e
