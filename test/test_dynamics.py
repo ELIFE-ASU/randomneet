@@ -1,5 +1,6 @@
 import math
 import networkx as nx
+import numpy as np
 import randomneet
 import statistics
 import unittest
@@ -11,6 +12,11 @@ from randomneet.randomizer import AbstractRandomizer
 from randomneet.topology import TopologyRandomizer, FixedTopology, MeanDegree, InDegree
 from randomneet.constraints import IsConnected, IsIrreducible
 from itertools import islice
+
+
+class RandomizingTestCase(unittest.TestCase):
+    def setUp(self):
+        self.rngstate = np.random.get_state()
 
 
 class MockTopologyRandomizer(TopologyRandomizer):
@@ -300,7 +306,7 @@ class TestMeanBias(unittest.TestCase):
         self.assertAlmostEqual(got, rand.p, places=2)
 
 
-class TestLocalBias(unittest.TestCase):
+class TestLocalBias(RandomizingTestCase):
     """
     Unit tests for the LocalBias randomizer
     """
@@ -332,8 +338,16 @@ class TestLocalBias(unittest.TestCase):
         rand = LocalBias(myeloid)
         expected_bias = local_bias(myeloid)
         for net in islice(rand, 100):
-            self.assertEqual(local_bias(net), expected_bias)
+            try:
+                self.assertEqual(local_bias(net), expected_bias)
+            except Exception as e:
+                print('RNG State\n', self.rngstate)
+                raise e
 
         rand = LocalBias(myeloid, InDegree)
         for net in islice(rand, 100):
-            self.assertEqual(local_bias(net), expected_bias)
+            try:
+                self.assertEqual(local_bias(net), expected_bias)
+            except Exception as e:
+                print('RNG State\n', self.rngstate)
+                raise e
