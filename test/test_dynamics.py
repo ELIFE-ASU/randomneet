@@ -297,7 +297,7 @@ class TestMeanBias(unittest.TestCase):
         """
         rand = MeanBias(myeloid)
         got = statistics.mean(map(rand._mean_bias, islice(rand, 100)))
-        self.assertAlmostEqual(got, rand.p, places=2)
+        self.assertAlmostEqual(got, rand.p, delta=0.01)
 
 
 class TestLocalBias(unittest.TestCase):
