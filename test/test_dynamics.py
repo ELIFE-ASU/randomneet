@@ -337,9 +337,8 @@ class TestLocalBias(unittest.TestCase):
             try:
                 self.assertTrue(nx.is_isomorphic(graph, myeloid_graph))
             except Exception as err:
-                print(graph.degree, myeloid_graph.degree)
-                print(graph.in_degree, myeloid_graph.in_degree)
-                print(graph.out_degree, myeloid_graph.out_degree)
+                print(graph.edges)
+                print(myeloid_graph.edges)
                 raise err
 
             self.assertEqual([graph.in_degree(n) for n in graph.nodes],
