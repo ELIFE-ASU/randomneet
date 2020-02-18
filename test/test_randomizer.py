@@ -12,7 +12,9 @@ class MockRandomizer(AbstractRandomizer):
     """
     A mock implementation of the AbstractRandomizer base class
     """
-    counter = 0
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.counter = 0
 
     def _randomize(self):
         """
