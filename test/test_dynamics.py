@@ -331,7 +331,9 @@ class TestLocalBias(unittest.TestCase):
 
         rand = LocalBias(myeloid)
         expected_bias = local_bias(myeloid)
-        self.assertTrue(all(map(lambda n: local_bias(n) == expected_bias, islice(rand, 100))))
+        for net in islice(rand, 100):
+            self.assertEqual(local_bias(net), expected_bias)
 
         rand = LocalBias(myeloid, InDegree)
-        self.assertTrue(all(map(lambda n: local_bias(n) == expected_bias, islice(rand, 100))))
+        for net in islice(rand, 100):
+            self.assertEqual(local_bias(net), expected_bias)
