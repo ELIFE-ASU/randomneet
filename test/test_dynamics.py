@@ -260,7 +260,8 @@ class TestUniformBias(unittest.TestCase):
         p = 0.3
 
         rand = UniformBias(s_pombe, p)
-        indegree = dict(s_pombe.network_graph().in_degree).values()
+        s_pombe_graph = s_pombe.network_graph()
+        indegree = [s_pombe_graph.in_degree(n) for n in sorted(s_pombe_graph.nodes)]
         high = [0.0 if k == 0 else math.ceil(p * 2**k) / 2**k for k in indegree]
         low = [0.0 if k == 0 else math.floor(p * 2**k) / 2**k for k in indegree]
         for net in islice(rand, 10):
