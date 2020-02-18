@@ -242,3 +242,40 @@ class GenericDynamical(DynamicalConstraint):
         """
         if super().satisfies(net):
             return self.test(net)
+
+
+class NodeConstraint(DynamicalConstraint):
+    """
+    Constraints which operate on nodes (functions) of dynamical networks.
+    """
+    pass
+
+
+class GenericNodeConstraint(DynamicalConstraint):
+    def __init__(self, test):
+        if not callable(test):
+            raise TypeError('test must be callable')
+        self.test = test
+
+    def satisfies(self, net):
+        if super().satisfies(net):
+            return self.test(net)
+
+
+class IrreducibleNode(NodeConstraint):
+    def satisfies(self, conditions):
+        if len(conditions) == 0:
+            return True
+        k = list(map(len, conditions))[0]
+        for i in range(k):
+            counter = {}  # type: ignore
+            for state in conditions:
+                state_sans_source = state[:i] + state[i + 1:]
+                if int(state[i]) == 1:
+                    counter[state_sans_source] = counter.get(state_sans_source, 0) + 1
+                else:
+                    counter[state_sans_source] = counter.get(state_sans_source, 0) - 1
+
+            if not any(counter.values()):
+                return False
+        return True

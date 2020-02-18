@@ -4,7 +4,8 @@ import numpy as np
 from abc import abstractmethod
 from .randomizer import AbstractRandomizer
 from .topology import TopologyRandomizer, FixedTopology, InDegree
-from .constraints import DynamicalConstraint, TopologicalConstraint, GenericDynamical, ConstraintError
+from .constraints import DynamicalConstraint, TopologicalConstraint, GenericDynamical, \
+    NodeConstraint, GenericNodeConstraint, ConstraintError
 from inspect import isclass
 
 
@@ -53,10 +54,12 @@ class NetworkRandomizer(AbstractRandomizer):
         elif not isinstance(constraints, list):
             constraints = list(constraints)
 
-        tconstraints, dconstraints = [], []
+        tconstraints, nconstraints, dconstraints = [], [], []
 
         for i, constraint in enumerate(constraints):
-            if isinstance(constraint, DynamicalConstraint):
+            if isinstance(constraint, NodeConstraint):
+                nconstraints.append(constraint)
+            elif isinstance(constraint, DynamicalConstraint):
                 dconstraints.append(constraint)
             elif isinstance(constraint, TopologicalConstraint):
                 tconstraints.append(constraint)
@@ -67,7 +70,30 @@ class NetworkRandomizer(AbstractRandomizer):
                 raise TypeError(msg)
 
         self.trand.constraints = tconstraints
+        self.node_constraints = nconstraints
         AbstractRandomizer.constraints.__set__(self, dconstraints)  # type: ignore
+
+    @property
+    def node_constraints(self):
+        return self.__node_constraints
+
+    @node_constraints.setter
+    def node_constraints(self, constraints):
+        if constraints is None:
+            constraints = []
+        elif not isinstance(constraints, list):
+            constraints = list(constraints)
+
+        for i, constraint in enumerate(constraints):
+            if isinstance(constraint, NodeConstraint):
+                pass
+            elif callable(constraint):
+                constraint[i] = GenericNodeConstraint(constraint)
+            else:
+                msg = 'constraints must be callable, a DynamicalConstraint or TopologicalConstraint'
+                raise TypeError(msg)
+
+        self.__node_constraints = constraints
 
     def add_constraint(self, constraint):
         """
@@ -77,7 +103,9 @@ class NetworkRandomizer(AbstractRandomizer):
         :type constraint: AbstractConstraint
         :raises TypeError: if the constraint is not an AbstractConstraint
         """
-        if isinstance(constraint, DynamicalConstraint):
+        if isinstance(constraint, NodeConstraint):
+            self.__node_constraints.append(constraint)
+        elif isinstance(constraint, DynamicalConstraint):
             super().add_constraint(constraint)
         elif callable(constraint):
             super().add_constraint(GenericDynamical(constraint))
@@ -106,12 +134,24 @@ class NetworkRandomizer(AbstractRandomizer):
             table.append((predecessors, self._random_function(**params)))
         return neet.boolean.LogicNetwork(table)
 
+    def _check_node_constraints(self, f):
+        for constraint in self.node_constraints:
+            if not constraint.satisfies(f):
+                return False
+        return True
+
     def _random_function(self, k, p, **kwargs):
         volume = 2**k
         integer, decimal = divmod(p * volume, 1)
-        num_states = int(integer + np.random.choice(2, p=[1 - decimal, decimal]))
-        indices = np.random.choice(volume, num_states, replace=False)
-        return set('{0:0{1}b}'.format(index, k) for index in indices)
+
+        loop = 0
+        while self.timeout <= 0 or loop < self.timeout:
+            num_states = int(integer + np.random.choice(2, p=[1 - decimal, decimal]))
+            indices = np.random.choice(volume, num_states, replace=False)
+            f = set('{0:0{1}b}'.format(index, k) for index in indices)
+            if self._check_node_constraints(f):
+                return f
+        raise ConstraintError('failed to generate a function that statisfies all constraints')
 
     @abstractmethod
     def _function_class_parameters(self, topology, node, **kwargs):
