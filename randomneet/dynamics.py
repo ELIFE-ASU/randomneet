@@ -3,9 +3,9 @@ import numpy as np
 
 from abc import abstractmethod
 from .randomizer import AbstractRandomizer
-from .topology import TopologyRandomizer, FixedTopology
+#  from .topology import TopologyRandomizer, FixedTopology
 from .constraints import DynamicalConstraint, TopologicalConstraint, GenericDynamical, ConstraintError
-from inspect import isclass
+#  from inspect import isclass
 
 
 class NetworkRandomizer(AbstractRandomizer):
