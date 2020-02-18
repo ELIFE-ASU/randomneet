@@ -249,7 +249,9 @@ class TestUniformBias(unittest.TestCase):
         Ensure the generated networks have a bias of 0.5 by default
         """
         rand = UniformBias(s_pombe)
-        expect = [0.0 if k == 0 else 0.5 for k in dict(s_pombe.network_graph().in_degree).values()]
+        s_pombe_graph = s_pombe.network_graph()
+        indegree = [s_pombe_graph.in_degree(n) for n in sorted(s_pombe_graph.nodes)]
+        expect = [0.0 if s_pombe_graph.in_degree(n) == 0 else 0.5 for n in indegree]
         got = list(map(self.bias, islice(rand, 10)))
         self.assertEqual(got, [expect] * len(got))
 
@@ -267,10 +269,7 @@ class TestUniformBias(unittest.TestCase):
         for net in islice(rand, 10):
             got = self.bias(net)
             for g, l, h in zip(got, low, high):
-                try:
-                    self.assertTrue(g == l or g == h)
-                except Exception as e:
-                    raise Exception(got, low, high) from e
+                self.assertTrue(g == l or g == h)
 
 
 class TestMeanBias(unittest.TestCase):
@@ -332,27 +331,15 @@ class TestLocalBias(unittest.TestCase):
 
         rand = LocalBias(myeloid)
         myeloid_graph = myeloid.network_graph()
-        for node in sorted(myeloid_graph.nodes):
-            print(node, tuple(tuple(myeloid_graph.predecessors(node))))
-
-        print()
+        myeloid_indegree = [myeloid_graph.in_degree(n) for n in sorted(myeloid_graph.nodes)]
         expected_bias = local_bias(myeloid)
         for net in islice(rand, 1):
-            graph = net.network_graph()
-            try:
-                self.assertTrue(nx.is_isomorphic(graph, myeloid_graph))
-            except Exception as err:
-                print(graph.edges)
-                print(myeloid_graph.edges)
-                raise err
-
-            self.assertEqual([graph.in_degree(n) for n in graph.nodes],
-                             [myeloid_graph.in_degree(n) for n in myeloid_graph.nodes])
+            self.assertTrue(nx.is_isomorphic(net.network_graph(), myeloid_graph))
             self.assertEqual(local_bias(net), expected_bias)
 
-        #  rand = LocalBias(myeloid, InDegree)
-        #  for net in islice(rand, 100):
-        #      self.assertTrue(nx.is_isomorphic(net.network_graph(), myeloid.network_graph()))
-        #      #  self.assertEqual([net.in_degree(n) for n in net.nodes],
-        #      #                   [myeloid.in_degree(n) for n in myeloid.nodes])
-        #      self.assertEqual(local_bias(net), expected_bias)
+        rand = LocalBias(myeloid, InDegree)
+        for net in islice(rand, 100):
+            graph = net.network_graph()
+            indegree = [graph.in_degree(n) for n in sorted(graph.nodes)]
+            self.assertEqual(indegree, myeloid_indegree)
+            self.assertEqual(local_bias(net), expected_bias)

@@ -102,7 +102,6 @@ class NetworkRandomizer(AbstractRandomizer):
         table = []
         for node in sorted(topology.nodes):
             predecessors = tuple(topology.predecessors(node))
-            print(node, predecessors)
             params = self._function_class_parameters(topology, node)
             table.append((predecessors, self._random_function(**params)))
         return neet.boolean.LogicNetwork(table)
