@@ -3,9 +3,9 @@ import numpy as np
 
 from abc import abstractmethod
 from .randomizer import AbstractRandomizer
-#  from .topology import TopologyRandomizer, FixedTopology
+from .topology import TopologyRandomizer, FixedTopology
 from .constraints import DynamicalConstraint, TopologicalConstraint, GenericDynamical, ConstraintError
-#  from inspect import isclass
+from inspect import isclass
 
 
 class NetworkRandomizer(AbstractRandomizer):
@@ -24,17 +24,16 @@ class NetworkRandomizer(AbstractRandomizer):
                         out. If less than 1, the rejection testing will never
                         time out.
         """
-        #  if trand is None:
-        #      trand = FixedTopology(network, timeout=timeout, **kwargs)
-        #  elif isclass(trand) and issubclass(trand, TopologyRandomizer):
-        #      trand = trand(network, timeout=timeout, **kwargs)
-        #  elif isinstance(trand, TopologyRandomizer):
-        #      pass
-        #  else:
-        #      raise TypeError('trand must be an instance or subclass of TopologyRandomizer')
-        #  self.trand = trand
-        #  super().__init__(network, constraints, timeout, **kwargs)
+        if trand is None:
+            trand = FixedTopology(network, timeout=timeout, **kwargs)
+        elif isclass(trand) and issubclass(trand, TopologyRandomizer):
+            trand = trand(network, timeout=timeout, **kwargs)
+        elif isinstance(trand, TopologyRandomizer):
+            pass
+        else:
+            raise TypeError('trand must be an instance or subclass of TopologyRandomizer')
         self.trand = trand
+        super().__init__(network, constraints, timeout, **kwargs)
 
     @property
     def constraints(self):
@@ -49,26 +48,27 @@ class NetworkRandomizer(AbstractRandomizer):
         :type constraints: a seq of AbstractConstraint instances
         :raises TypeError: if any of the contraints are not an AbstractConstraint
         """
-        if constraints is None:
-            constraints = []
-        elif not isinstance(constraints, list):
-            constraints = list(constraints)
-
-        tconstraints, dconstraints = [], []
-
-        for i, constraint in enumerate(constraints):
-            if isinstance(constraint, DynamicalConstraint):
-                dconstraints.append(constraint)
-            elif isinstance(constraint, TopologicalConstraint):
-                tconstraints.append(constraint)
-            elif callable(constraint):
-                dconstraints.append(GenericDynamical(constraint))
-            else:
-                msg = 'constraints must be callable, a DynamicalConstraint or TopologicalConstraint'
-                raise TypeError(msg)
-
-        self.trand.constraints = tconstraints
-        AbstractRandomizer.constraints.__set__(self, dconstraints)  # type: ignore
+        #  if constraints is None:
+        #      constraints = []
+        #  elif not isinstance(constraints, list):
+        #      constraints = list(constraints)
+        #
+        #  tconstraints, dconstraints = [], []
+        #
+        #  for i, constraint in enumerate(constraints):
+        #      if isinstance(constraint, DynamicalConstraint):
+        #          dconstraints.append(constraint)
+        #      elif isinstance(constraint, TopologicalConstraint):
+        #          tconstraints.append(constraint)
+        #      elif callable(constraint):
+        #          dconstraints.append(GenericDynamical(constraint))
+        #      else:
+        #          msg = 'constraints must be callable, a DynamicalConstraint or TopologicalConstraint'
+        #          raise TypeError(msg)
+        #
+        #  self.trand.constraints = tconstraints
+        #  AbstractRandomizer.constraints.__set__(self, dconstraints)  # type: ignore
+        AbstractRandomizer.constraints.__set__(self, constraints)  # type: ignore
 
     def add_constraint(self, constraint):
         """
