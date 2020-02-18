@@ -114,7 +114,7 @@ class NetworkRandomizer(AbstractRandomizer):
         return set('{0:0{1}b}'.format(index, k) for index in indices)
 
     @abstractmethod
-    def _function_class_parameters(self, topology, node):
+    def _function_class_parameters(self, topology, node, **kwargs):
         return {'topology': topology, 'node': node, 'k': topology.in_degree(node)}
 
 
@@ -127,7 +127,7 @@ class UniformBias(NetworkRandomizer):
         super().__init__(network, **kwargs)
         self.p = p
 
-    def _function_class_parameters(self, topology, node):
+    def _function_class_parameters(self, topology, node, **kwargs):
         params = super()._function_class_parameters(topology, node)
         params.update({'p': self.p})
         return params
@@ -152,6 +152,11 @@ class MeanBias(UniformBias):
 
 class LocalBias(NetworkRandomizer):
     def __init__(self, network, trand=None, **kwargs):
+        """
+        Generate networks with the same bias on each node. This scheme can only
+        be applied in conjunction with the ``FixedTopology`` and ``InDegree`
+        topological randomizers.
+        """
         if not isinstance(network, neet.boolean.LogicNetwork):
             raise NotImplementedError(type(network))
         elif trand is not None:
@@ -163,7 +168,51 @@ class LocalBias(NetworkRandomizer):
         super().__init__(network, trand, **kwargs)
         self.local_bias = [float(len(row[1]) / 2**len(row[0])) for row in network.table]
 
-    def _function_class_parameters(self, topology, node):
+    def _function_class_parameters(self, topology, node, **kwargs):
         params = super()._function_class_parameters(topology, node)
         params.update({'p': self.local_bias[node]})
         return params
+
+
+class FixCanalizingMixin(NetworkRandomizer):
+    def _randomize(self, topology):
+        table = []
+        if self.network is None:  # type: ignore
+            raise NotImplementedError('Randomizer is based on a graph, cannot infer canalization')
+        canalizing = self.network.canalizing_nodes()
+        for node in sorted(topology.nodes):
+            predecessors = tuple(topology.predecessors(node))
+            params = self._function_class_parameters(topology, node)
+            if node in canalizing:
+                table.append((predecessors, self._random_canalizing_function(**params)))
+            else:
+                table.append((predecessors, self._random_function(**params)))
+        return neet.boolean.LogicNetwork(table)
+
+    def _random_canalizing_function(self, k, p, **kwargs):
+        integer, decimal = divmod(2**k * p, 1)
+        num_states = int(integer + np.random.choice(2, p=[1 - decimal, decimal]))
+
+        canalizing_input = np.random.choice(k)
+        canalizing_value = np.random.choice(2)
+        if num_states > 2**(k - 1):
+            canalized_value = 1
+        elif num_states < 2**(k - 1):
+            canalized_value = 0
+        else:
+            canalized_value = np.random.choice(2)
+
+        fixed_states = self._all_states_with_one_node_fixed(k, canalizing_input, canalizing_value)
+        other_states = np.lib.arraysetops.setxor1d(np.arange(2**k), fixed_states, assume_unique=True)
+
+        if canalized_value == 1:
+            state_idxs = np.random.choice(other_states, num_states - len(fixed_states), replace=False)
+            state_idxs = np.concatenate((state_idxs, np.array(fixed_states)))
+        elif canalized_value == 0:
+            state_idxs = np.random.choice(other_states, num_states, replace=False)
+
+        return set('{0:0{1}b}'.format(idx, k) for idx in state_idxs)
+
+    def _all_states_with_one_node_fixed(self, k, fixed_index, fixed_value):
+        return [idx for idx in range(2**k)
+                if '{0:0{1}b}'.format(idx, k)[fixed_index] == str(fixed_value)]

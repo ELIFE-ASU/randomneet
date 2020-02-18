@@ -5,7 +5,8 @@ import statistics
 import unittest
 
 from neet.boolean.examples import s_pombe, myeloid
-from randomneet.dynamics import NetworkRandomizer, UniformBias, MeanBias, LocalBias
+from randomneet.dynamics import NetworkRandomizer, UniformBias, MeanBias, LocalBias, \
+    FixCanalizingMixin
 from randomneet.constraints import GenericDynamical, GenericTopological, ConstraintError
 from randomneet.randomizer import AbstractRandomizer
 from randomneet.topology import TopologyRandomizer, FixedTopology, MeanDegree, InDegree
@@ -343,3 +344,39 @@ class TestLocalBias(unittest.TestCase):
             indegree = [graph.in_degree(n) for n in sorted(graph.nodes)]
             self.assertEqual(indegree, myeloid_indegree)
             self.assertEqual(local_bias(net), expected_bias)
+
+
+class CanalizingUniformBias(FixCanalizingMixin, UniformBias):
+    pass
+
+
+class TestCanalizingMixin(unittest.TestCase):
+    def test_canalizing(self):
+        expected = s_pombe.canalizing_nodes()
+
+        rand = UniformBias(s_pombe)
+        failures = sum(map(lambda n: not expected.issubset(n.canalizing_nodes()),
+                           islice(rand, 100)))
+        self.assertGreater(failures, 0)
+
+        rand = CanalizingUniformBias(s_pombe)
+        failures = sum(map(lambda n: expected.issubset(n.canalizing_nodes()), islice(rand, 100)))
+        failures = sum(map(lambda n: not expected.issubset(n.canalizing_nodes()),
+                           islice(rand, 100)))
+        self.assertEqual(failures, 0)
+
+        rand = CanalizingUniformBias(s_pombe, 0.25)
+        failures = sum(map(lambda n: expected.issubset(n.canalizing_nodes()), islice(rand, 100)))
+        failures = sum(map(lambda n: not expected.issubset(n.canalizing_nodes()),
+                           islice(rand, 100)))
+        self.assertEqual(failures, 0)
+
+        rand = CanalizingUniformBias(s_pombe, 0.75)
+        failures = sum(map(lambda n: expected.issubset(n.canalizing_nodes()), islice(rand, 100)))
+        failures = sum(map(lambda n: not expected.issubset(n.canalizing_nodes()),
+                           islice(rand, 100)))
+        self.assertEqual(failures, 0)
+
+        rand = CanalizingUniformBias(nx.complete_graph(9, nx.DiGraph))
+        with self.assertRaises(NotImplementedError):
+            rand.random()
