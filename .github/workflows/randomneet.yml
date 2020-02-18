@@ -6,8 +6,8 @@ jobs:
         runs-on: ${{matrix.os}}
         strategy:
             matrix:
-                os: [windows-latest]
-                python-version: [3.6]
+                os: [ubuntu-latest, macos-latest, windows-latest]
+                python-version: [3.5, 3.6, 3.7, 3.8]
 
         steps:
             - uses: actions/checkout@v2
@@ -22,7 +22,7 @@ jobs:
                   python -m pip install lxml codecov nose flake8
                   python -m pip install .
             - name: "Run tests"
-              run: nosetests -coverage
+              run: nosetests --with-coverage --cover-package=randomneet
             - name: "Submit test coverage"
               run: codecov
               env:
