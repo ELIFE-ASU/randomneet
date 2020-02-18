@@ -331,7 +331,7 @@ class TestLocalBias(unittest.TestCase):
 
         rand = LocalBias(myeloid)
         myeloid_graph = myeloid.network_graph()
-        for node in myeloid_graph.nodes:
+        for node in sorted(myeloid_graph.nodes):
             print(node, tuple(tuple(myeloid_graph.predecessors(node))))
 
         print()
