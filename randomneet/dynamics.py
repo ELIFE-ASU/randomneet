@@ -1,5 +1,6 @@
 import neet
 import numpy as np
+import networkx as nx
 
 from abc import abstractmethod
 from .randomizer import AbstractRandomizer
@@ -89,6 +90,9 @@ class NetworkRandomizer(AbstractRandomizer):
 
     def random(self):
         topology = self.trand.random()
+
+        if isinstance(self.trand, FixedTopology) and not nx.is_isomorphic(topology, self.graph):
+            raise Exception('expected topology to be unchanged')
 
         loop = 0
         while self.timeout <= 0 or loop < self.timeout:
