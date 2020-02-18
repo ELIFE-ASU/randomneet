@@ -24,14 +24,14 @@ class NetworkRandomizer(AbstractRandomizer):
                         out. If less than 1, the rejection testing will never
                         time out.
         """
-        if trand is None:
-            trand = FixedTopology(network, timeout=timeout, **kwargs)
-        elif isclass(trand) and issubclass(trand, TopologyRandomizer):
-            trand = trand(network, timeout=timeout, **kwargs)
-        elif isinstance(trand, TopologyRandomizer):
-            pass
-        else:
-            raise TypeError('trand must be an instance or subclass of TopologyRandomizer')
+        #  if trand is None:
+        #      trand = FixedTopology(network, timeout=timeout, **kwargs)
+        #  elif isclass(trand) and issubclass(trand, TopologyRandomizer):
+        #      trand = trand(network, timeout=timeout, **kwargs)
+        #  elif isinstance(trand, TopologyRandomizer):
+        #      pass
+        #  else:
+        #      raise TypeError('trand must be an instance or subclass of TopologyRandomizer')
         self.trand = trand
         super().__init__(network, constraints, timeout, **kwargs)
 
