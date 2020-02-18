@@ -331,8 +331,12 @@ class TestLocalBias(unittest.TestCase):
 
         rand = LocalBias(myeloid)
         myeloid_graph = myeloid.network_graph()
+        for node in myeloid_graph.nodes:
+            print(node, tuple(tuple(myeloid_graph.predecessors(node))))
+
+        print()
         expected_bias = local_bias(myeloid)
-        for net in islice(rand, 100):
+        for net in islice(rand, 1):
             graph = net.network_graph()
             try:
                 self.assertTrue(nx.is_isomorphic(graph, myeloid_graph))
