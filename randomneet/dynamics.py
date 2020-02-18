@@ -1,10 +1,8 @@
 from .randomizer import AbstractRandomizer
-from .topology import TopologyRandomizer, FixedTopology
-from inspect import isclass
 
 
 class NetworkRandomizer(AbstractRandomizer):
-    def __init__(self, network, trand=None, constraints=None, timeout=1000, **kwargs):
+    def __init__(self, network, **kwargs):
         """
         An abstract base class for all randomizers which implement dynamical
         randomization.
@@ -19,13 +17,7 @@ class NetworkRandomizer(AbstractRandomizer):
                         out. If less than 1, the rejection testing will never
                         time out.
         """
-        if trand is None:
-            trand = FixedTopology(network, timeout=timeout, **kwargs)
-        elif isclass(trand) and issubclass(trand, TopologyRandomizer):
-            trand = trand(network, timeout=timeout, **kwargs)
-        elif isinstance(trand, TopologyRandomizer):
-            pass
-        else:
-            raise TypeError('trand must be an instance or subclass of TopologyRandomizer')
-        self.trand = trand
-        super().__init__(network, constraints, timeout, **kwargs)
+        super().__init__(network, **kwargs)
+
+    def _randomize(self):
+        return self.network
