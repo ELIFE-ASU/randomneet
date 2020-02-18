@@ -131,3 +131,20 @@ class UniformBias(NetworkRandomizer):
         params = super()._function_class_parameters(topology, node)
         params.update({'p': self.p})
         return params
+
+
+class MeanBias(UniformBias):
+    def __init__(self, network, **kwargs):
+        """
+        Generate random Boolean networks with the same mean bias (on average)
+        as the original network.
+        """
+        if not isinstance(network, neet.boolean.LogicNetwork):
+            raise NotImplementedError()
+        super().__init__(network, self._mean_bias(network), **kwargs)
+
+    def _mean_bias(self, network):
+        """
+        Get the mean bias of a network
+        """
+        return np.mean([float(len(row[1]) / 2**len(row[0])) for row in network.table])

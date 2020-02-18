@@ -1,10 +1,11 @@
 import math
 import networkx as nx
 import randomneet
+import statistics
 import unittest
 
 from neet.boolean.examples import s_pombe, myeloid
-from randomneet.dynamics import NetworkRandomizer, UniformBias
+from randomneet.dynamics import NetworkRandomizer, UniformBias, MeanBias
 from randomneet.constraints import GenericDynamical, GenericTopological, ConstraintError
 from randomneet.randomizer import AbstractRandomizer
 from randomneet.topology import TopologyRandomizer, FixedTopology, MeanDegree
@@ -275,3 +276,37 @@ class TestUniformBias(unittest.TestCase):
                     self.assertTrue(g == l or g == h)
                 except Exception as e:
                     raise Exception(got, low, high) from e
+
+
+class TestMeanBias(unittest.TestCase):
+    """
+    Unit tests for the UniformBias randomizer
+    """
+
+    def take(self, n, iter):
+        """
+        Take the first ``n`` elements from ``iter``.
+        """
+        return islice(iter, n)
+
+    def test_uniform_bias(self):
+        """
+        Ensure that MeanBias is a UniformBias
+        """
+        self.assertIsInstance(MeanBias(myeloid), UniformBias)
+
+    def test_unimplemented(self):
+        """
+        MeanBias is currently only implemented for logic network
+        """
+        with self.assertRaises(NotImplementedError):
+            MeanBias(s_pombe)
+
+    def test_bias(self):
+        """
+        Ensure the generated networks have a the same mean bias as the original
+        network (on average).
+        """
+        rand = MeanBias(myeloid)
+        got = statistics.mean(map(rand._mean_bias, self.take(100, rand)))
+        self.assertAlmostEqual(got, rand.p, places=2)
