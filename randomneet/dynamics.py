@@ -3,7 +3,7 @@ import numpy as np
 
 from abc import abstractmethod
 from .randomizer import AbstractRandomizer
-from .topology import TopologyRandomizer, FixedTopology
+from .topology import TopologyRandomizer, FixedTopology, InDegree
 from .constraints import DynamicalConstraint, TopologicalConstraint, GenericDynamical, ConstraintError
 from inspect import isclass
 
@@ -148,3 +148,22 @@ class MeanBias(UniformBias):
         Get the mean bias of a network
         """
         return np.mean([float(len(row[1]) / 2**len(row[0])) for row in network.table])
+
+
+class LocalBias(NetworkRandomizer):
+    def __init__(self, network, trand=None, **kwargs):
+        if not isinstance(network, neet.boolean.LogicNetwork):
+            raise NotImplementedError(type(network))
+        elif trand is not None:
+            if isclass(trand) and not issubclass(trand, (FixedTopology, InDegree)):
+                raise NotImplementedError(trand)
+            elif not isclass(trand) and not isinstance(trand, (FixedTopology, InDegree)):
+                raise NotImplementedError(type(trand))
+
+        super().__init__(network, trand, **kwargs)
+        self.local_bias = [float(len(row[1]) / 2**len(row[0])) for row in network.table]
+
+    def _function_class_parameters(self, topology, node):
+        params = super()._function_class_parameters(topology, node)
+        params.update({'p': self.local_bias[node]})
+        return params

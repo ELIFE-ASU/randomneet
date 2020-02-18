@@ -5,10 +5,10 @@ import statistics
 import unittest
 
 from neet.boolean.examples import s_pombe, myeloid
-from randomneet.dynamics import NetworkRandomizer, UniformBias, MeanBias
+from randomneet.dynamics import NetworkRandomizer, UniformBias, MeanBias, LocalBias
 from randomneet.constraints import GenericDynamical, GenericTopological, ConstraintError
 from randomneet.randomizer import AbstractRandomizer
-from randomneet.topology import TopologyRandomizer, FixedTopology, MeanDegree
+from randomneet.topology import TopologyRandomizer, FixedTopology, MeanDegree, InDegree
 from randomneet.constraints import IsConnected, IsIrreducible
 from itertools import islice
 
@@ -298,3 +298,40 @@ class TestMeanBias(unittest.TestCase):
         rand = MeanBias(myeloid)
         got = statistics.mean(map(rand._mean_bias, islice(rand, 100)))
         self.assertAlmostEqual(got, rand.p, places=2)
+
+
+class TestLocalBias(unittest.TestCase):
+    """
+    Unit tests for the LocalBias randomizer
+    """
+
+    def test_local_bias(self):
+        """
+        Ensure that LocalBias is a NetworkRandomizer
+        """
+        self.assertIsInstance(LocalBias(myeloid), NetworkRandomizer)
+
+    def test_unimplemented(self):
+        """
+        LocalBias is currently only implemented for logic networks with
+        FixedTopology or FixedInDegree topological randomizers
+        """
+        with self.assertRaises(NotImplementedError):
+            LocalBias(s_pombe)
+
+        with self.assertRaises(NotImplementedError):
+            LocalBias(myeloid, MeanDegree)
+
+        with self.assertRaises(NotImplementedError):
+            LocalBias(myeloid, MeanDegree(myeloid))
+
+    def test_bias(self):
+        def local_bias(network):
+            return [len(row[1]) / 2**len(row) for row in network.table]
+
+        rand = LocalBias(myeloid)
+        expected_bias = local_bias(myeloid)
+        self.assertTrue(all(map(lambda n: local_bias(n) == expected_bias, islice(rand, 100))))
+
+        rand = LocalBias(myeloid, InDegree)
+        self.assertTrue(all(map(lambda n: local_bias(n) == expected_bias, islice(rand, 100))))
