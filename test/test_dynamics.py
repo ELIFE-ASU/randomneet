@@ -4,18 +4,44 @@ import unittest
 
 from neet.boolean.examples import s_pombe
 from randomneet.dynamics import NetworkRandomizer
-from randomneet.constraints import GenericDynamical
+from randomneet.constraints import GenericDynamical, GenericTopological, ConstraintError
 from randomneet.randomizer import AbstractRandomizer
-from randomneet.topology import FixedTopology, MeanDegree
+from randomneet.topology import TopologyRandomizer, FixedTopology, MeanDegree
 from randomneet.constraints import IsConnected, IsIrreducible
 
 
-class MockNetworkRandomizer(NetworkRandomizer):
+class MockTopologyRandomizer(TopologyRandomizer):
+    """
+    A mock implementation of the AbstractRandomizer base class
+    """
+    counter = 0
+
     def _randomize(self):
-        return self.network
+        """
+        Generate successively larger empty graphs
+        """
+        self.counter += 1
+        return nx.DiGraph([(i, j) for i in range(self.counter) for j in range(self.counter)])
 
 
-class TestDynamicsRandomizer(unittest.TestCase):
+class MockNetworkRandomizer(NetworkRandomizer):
+    p = 0.0
+
+    def _randomize(self, topology):
+        network = super()._randomize(topology)
+        self.p += 0.1
+        return network
+
+    def _function_class_parameters(self, topology, node):
+        """
+        Generate parameters with successively higher bias
+        """
+        d = super()._function_class_parameters(topology, node)
+        d.update({'k': topology.in_degree(node), 'p': self.p})
+        return d
+
+
+class TestNetworkRandomizer(unittest.TestCase):
     """
     Unit tests for the dynamics randomizers
     """
@@ -169,3 +195,30 @@ class TestDynamicsRandomizer(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             rand.add_constraint(5)
+
+    def test_random_timeout(self):
+        """
+        Ensure the randomizer times out properly
+        """
+        def allfail(_):
+            return False
+
+        tc, dc = GenericTopological(allfail), GenericDynamical(allfail)
+        rand = MockNetworkRandomizer(s_pombe, MockTopologyRandomizer, constraints=[tc], timeout=10)
+        with self.assertRaises(ConstraintError):
+            rand.random()
+
+        rand = MockNetworkRandomizer(s_pombe, MockTopologyRandomizer, constraints=[dc], timeout=10)
+        with self.assertRaises(ConstraintError):
+            rand.random()
+
+    def test_random(self):
+        def bias(network):
+            return [float(len(row[1]) / 2**len(row[0])) for row in network.table]
+
+        rand = MockNetworkRandomizer(s_pombe, MockTopologyRandomizer, timeout=20)
+        rand.add_constraint(lambda n: bias(n) == [1.0] * n.size)
+        rand.add_constraint(GenericTopological(lambda g: len(g) == 10))
+
+        network = rand.random()
+        self.assertEqual(len(network.network_graph()), 10)

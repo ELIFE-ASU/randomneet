@@ -1,6 +1,10 @@
+import neet
+import numpy as np
+
+from abc import abstractmethod
 from .randomizer import AbstractRandomizer
 from .topology import TopologyRandomizer, FixedTopology
-from .constraints import DynamicalConstraint, TopologicalConstraint, GenericDynamical
+from .constraints import DynamicalConstraint, TopologicalConstraint, GenericDynamical, ConstraintError
 from inspect import isclass
 
 
@@ -82,3 +86,33 @@ class NetworkRandomizer(AbstractRandomizer):
         else:
             msg = 'constraints must be callable, a DynamicalConstraint or TopologicalConstraint'
             raise TypeError(msg)
+
+    def random(self):
+        topology = self.trand.random()
+
+        loop = 0
+        while self.timeout <= 0 or loop < self.timeout:
+            net = self._randomize(topology)
+            if self._check_constraints(net):
+                return net
+            loop += 1
+        raise ConstraintError('failed to generate a network that statisfies all constraints')
+
+    def _randomize(self, topology):
+        table = []
+        for node in topology.nodes:
+            predecessors = tuple(topology.predecessors(node))
+            params = self._function_class_parameters(topology, node)
+            table.append((predecessors, self._random_function(**params)))
+        return neet.boolean.LogicNetwork(table)
+
+    def _random_function(self, k, p, **kwargs):
+        volume = 2**k
+        integer, decimal = divmod(p * volume, 1)
+        num_states = int(integer + np.random.choice(2, p=[1 - decimal, decimal]))
+        indices = np.random.choice(volume, num_states, replace=False)
+        return set('{0:0{1}b}'.format(index, k) for index in indices)
+
+    @abstractmethod
+    def _function_class_parameters(self, topology, node):
+        return {'topology': topology, 'node': node}
