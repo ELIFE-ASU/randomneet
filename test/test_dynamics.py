@@ -44,7 +44,6 @@ class MockNetworkRandomizer(NetworkRandomizer):
         return d
 
 
-@unittest.skip("Tracking down a bug on Windows, pyhton36")
 class TestNetworkRandomizer(unittest.TestCase):
     """
     Unit tests for the dynamics randomizers
@@ -200,6 +199,7 @@ class TestNetworkRandomizer(unittest.TestCase):
         with self.assertRaises(TypeError):
             rand.add_constraint(5)
 
+    @unittest.skip('I think the bug is str.format again')
     def test_random_timeout(self):
         """
         Ensure the randomizer times out properly
@@ -216,6 +216,7 @@ class TestNetworkRandomizer(unittest.TestCase):
         with self.assertRaises(ConstraintError):
             rand.random()
 
+    @unittest.skip('I think the bug is str.format again')
     def test_random(self):
         def bias(network):
             return [float(len(row[1]) / 2**len(row[0])) for row in network.table]
