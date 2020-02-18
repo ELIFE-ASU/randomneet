@@ -238,12 +238,6 @@ class TestUniformBias(unittest.TestCase):
         """
         return [float(len(row[1]) / 2**len(row[0])) for row in network.table]
 
-    def take(self, n, iter):
-        """
-        Take the first ``n`` elements from ``iter``.
-        """
-        return islice(iter, n)
-
     def test_uniform_bias(self):
         """
         Ensure that UniformBias is a NetworkRandomizer
@@ -256,7 +250,7 @@ class TestUniformBias(unittest.TestCase):
         """
         rand = UniformBias(s_pombe)
         expect = [0.0 if k == 0 else 0.5 for k in dict(s_pombe.network_graph().in_degree).values()]
-        got = list(map(self.bias, self.take(10, rand)))
+        got = list(map(self.bias, islice(rand, 10)))
         self.assertEqual(got, [expect] * len(got))
 
     def test_other_bias(self):
@@ -269,7 +263,7 @@ class TestUniformBias(unittest.TestCase):
         indegree = dict(s_pombe.network_graph().in_degree).values()
         high = [0.0 if k == 0 else math.ceil(p * 2**k) / 2**k for k in indegree]
         low = [0.0 if k == 0 else math.floor(p * 2**k) / 2**k for k in indegree]
-        for net in self.take(10, rand):
+        for net in islice(rand, 10):
             got = self.bias(net)
             for g, l, h in zip(got, low, high):
                 try:
@@ -280,16 +274,10 @@ class TestUniformBias(unittest.TestCase):
 
 class TestMeanBias(unittest.TestCase):
     """
-    Unit tests for the UniformBias randomizer
+    Unit tests for the MeanBias randomizer
     """
 
-    def take(self, n, iter):
-        """
-        Take the first ``n`` elements from ``iter``.
-        """
-        return islice(iter, n)
-
-    def test_uniform_bias(self):
+    def test_mean_bias(self):
         """
         Ensure that MeanBias is a UniformBias
         """
@@ -308,5 +296,5 @@ class TestMeanBias(unittest.TestCase):
         network (on average).
         """
         rand = MeanBias(myeloid)
-        got = statistics.mean(map(rand._mean_bias, self.take(100, rand)))
+        got = statistics.mean(map(rand._mean_bias, islice(rand, 100)))
         self.assertAlmostEqual(got, rand.p, places=2)
