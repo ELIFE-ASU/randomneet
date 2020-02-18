@@ -5,7 +5,7 @@ import statistics
 import unittest
 
 from neet.boolean.examples import s_pombe, myeloid
-from randomneet.dynamics import NetworkRandomizer, UniformBias, MeanBias
+from randomneet.dynamics import NetworkRandomizer
 from randomneet.constraints import GenericDynamical, GenericTopological, ConstraintError
 from randomneet.randomizer import AbstractRandomizer
 from randomneet.topology import TopologyRandomizer, FixedTopology, MeanDegree

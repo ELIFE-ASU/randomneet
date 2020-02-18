@@ -1,10 +1,5 @@
-import neet
-import numpy as np
-
-from abc import abstractmethod
 from .randomizer import AbstractRandomizer
 from .topology import TopologyRandomizer, FixedTopology
-from .constraints import DynamicalConstraint, TopologicalConstraint, GenericDynamical, ConstraintError
 from inspect import isclass
 
 
