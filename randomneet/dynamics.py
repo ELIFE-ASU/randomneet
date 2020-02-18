@@ -32,8 +32,9 @@ class NetworkRandomizer(AbstractRandomizer):
         #      pass
         #  else:
         #      raise TypeError('trand must be an instance or subclass of TopologyRandomizer')
+        #  self.trand = trand
+        #  super().__init__(network, constraints, timeout, **kwargs)
         self.trand = trand
-        super().__init__(network, constraints, timeout, **kwargs)
 
     @property
     def constraints(self):
